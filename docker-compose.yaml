@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  mqtt-gs:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto-gs
+    restart: no
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+    networks:
+      gs-network:
+        ipv4_address: 170.30.0.100
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+networks:
+  gs-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 170.30.0.0/16

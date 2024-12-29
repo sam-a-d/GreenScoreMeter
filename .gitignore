@@ -1,1 +1,3 @@
 grafana/plugins/
+playground.py
+SensorSimulation/__pycache__/

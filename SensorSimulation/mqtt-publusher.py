@@ -1,5 +1,4 @@
 import paho.mqtt.client as mqtt
-import random
 import time
 import configparser
 import threading
@@ -15,22 +14,40 @@ from simulator import Sensor
 client_address = 'localhost'
 # port = int(config['mqtt']['port'])
 port = 1883
-areas = 1
-homes = 2
+areas = 2
+homes = 10
 sensors = ['electricity', 'water', 'natural_gas', 'air_pollution', 'crude_oil',\
            'solarProduction', 'hydrologicalProduction', 'windProduction', 'bioGasProduction'\
             ]
+
+# This limit is suppose to set by the appropriate authority
+resouceUsageLimits = {
+    'electricity': 500,
+    'water': 700,
+    'natural_gas': 0.6,
+    'air_pollution': 300,
+    'crude_oil' : 70
+}
 
 # forests = int(config['data_generation']['forests'])
 # areas = int(config['data_generation']['areas'])
 # time_sleep = int(config['data_generation']['time_sleep'])
 # sensors = config['data_generation']['sensors'].split('|')
 
-mqtt_client = mqtt.Client()
-mqtt_client.connect(client_address, port=port)
+# mqtt_client = mqtt.Client()
+# mqtt_client.connect(client_address, port=port)
 dataSimulator = Sensor()
 
-def publish_area_data(mqtt_client, sensors, area, home):
+def create_client():
+    client = mqtt.Client()
+    client.connect(client_address, port=port)
+    return client
+
+
+def publish_area_data(sensors, area, home):
+
+    mqtt_client = create_client()  # Create a new client for each thread
+
     while True:
         # Generate random sensor data
         for sensor in sensors:
@@ -59,13 +76,13 @@ def publish_area_data(mqtt_client, sensors, area, home):
 
         time.sleep(1)  # Breaks between publishing data (defined in config)
         # Uncomment the line below if you want to see the published data in the console
-        print(f"Published {sensor} data: {data}")
+        # print(f"Published {sensor} data: {data}")
 
 # Publish data for each sensor
 threads=[]
 for area in range(areas):
     for home in range(homes):
-        thread = threading.Thread(target=publish_area_data, args=(mqtt_client, sensors, area, home))
+        thread = threading.Thread(target=publish_area_data, args=(sensors, area, home))
         threads.append(thread)
         thread.start()
 

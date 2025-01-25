@@ -1,0 +1,342 @@
+[
+    {
+        "id": "78be727fa7e059d9",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "2eea6dab767ce45c",
+        "type": "influxdb",
+        "hostname": "influxdb",
+        "port": 8086,
+        "protocol": "http",
+        "database": "database",
+        "name": "Influx",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://influxdb:8086",
+        "timeout": "20",
+        "rejectUnauthorized": false
+    },
+    {
+        "id": "d39b7bc3b0a47ce4",
+        "type": "mqtt-broker",
+        "name": "mqtt",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "310f4e6206e4edb5",
+        "type": "influxdb in",
+        "z": "78be727fa7e059d9",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Database",
+        "query": "from(bucket: \"gs_sensors\")\n  |> range(start: 0)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"mqtt_consumer\")\n  |> limit(n: 7)\n  |> yield(name: \"last\")",
+        "rawOutput": false,
+        "precision": "",
+        "retentionPolicy": "",
+        "org": "se4iot",
+        "x": 500,
+        "y": 560,
+        "wires": [
+            [
+                "e2800a3c73513a9d"
+            ]
+        ]
+    },
+    {
+        "id": "3b8d787758925015",
+        "type": "inject",
+        "z": "78be727fa7e059d9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 260,
+        "wires": [
+            [
+                "5a51656ac0e9b8c4"
+            ]
+        ]
+    },
+    {
+        "id": "efbcc5c90d227b86",
+        "type": "file in",
+        "z": "78be727fa7e059d9",
+        "name": "configurations",
+        "filename": "/data/setting/config.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 360,
+        "y": 120,
+        "wires": [
+            [
+                "31c97c540927e253"
+            ]
+        ]
+    },
+    {
+        "id": "31c97c540927e253",
+        "type": "csv",
+        "z": "78be727fa7e059d9",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 590,
+        "y": 120,
+        "wires": [
+            [
+                "9856030a9da6c187"
+            ]
+        ]
+    },
+    {
+        "id": "a43cad424356e647",
+        "type": "inject",
+        "z": "78be727fa7e059d9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "efbcc5c90d227b86"
+            ]
+        ]
+    },
+    {
+        "id": "e2800a3c73513a9d",
+        "type": "function",
+        "z": "78be727fa7e059d9",
+        "name": "green_score_calculation",
+        "func": "if(global.get('report_interval') == global.get('duration')){\n  var homes = global.get('homes')\n\n  for (let i = 0; i < homes.length; i++) {\n    var area = \"area_\" + homes[i].Area\n    var house = \"home_\" + homes[i].House\n    var phone = homes[i].Phone\n\n    var electricity_usage = 0\n    var water_usage = 0\n    var natural_gas_usage = 0\n    var air_polution_usage = 0\n    var crude_oil_usage = 0\n    var solar_production = 0\n    var hydrological_production = 0\n    var wind_production = 0\n    var biogas_production = 0\n\n\n    for (let j = 0; j < msg.payload.length; j++){\n      if (msg.payload[i].topic == 'air_pollution/'+area +'/' + house){\n        air_polution_usage = air_polution_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'electricity/'+area +'/' + house){\n        electricity_usage = electricity_usage + msg.payload[i]._value\n      }\n\n      if (msg.payload[i].topic == 'water/'+area +'/' + house){\n        water_usage = water_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'natural_gas/'+area +'/' + house){\n        natural_gas_usage = natural_gas_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'crude_oil/'+area +'/' + house){\n        crude_oil_usage = crude_oil_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'solarProduction/'+area +'/' + house){\n        solar_production = solar_production + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'hydrologicalProduction/'+area +'/' + house){\n        hydrological_production = hydrological_production + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'windProduction/' + area + '/' + house) {\n        wind_production = wind_production + msg.payload[i]._value\n      } \n      \n      if (msg.payload[i].topic == 'bioGasProduction/' + area + '/' + house) {\n        biogas_production = biogas_production + msg.payload[i]._value\n      }\n    }\n    \n  }\n\n  global.set('report_interval', 0) \n  // msg.payload = { air_polution_usage, electricity_usage, water_usage, natural_gas_usage, crude_oil_usage, solar_production, hydrological_production, wind_production, biogas_production }\n  msg.payload = msg.payload.length\n  return msg\n}\n\nmsg.payload = msg.payload.length\nreturn msg\n\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nfunction start(){\n    console\n}\n",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 400,
+        "wires": [
+            [
+                "a64c98e68f19d89e"
+            ]
+        ]
+    },
+    {
+        "id": "9856030a9da6c187",
+        "type": "function",
+        "z": "78be727fa7e059d9",
+        "name": "function 1",
+        "func": "if(msg.duration = \"weekly\"){\n    global.set(\"duration\", 30);\n}else if(msg.duration = \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.duration = \"yearly\"){\n    global.set(\"duration\", 365);\n}else{\n    global.set(\"duration\", 1);\n}\n\nglobal.set(\"configData\", msg)\n\nglobal.set(\"report_interval\", 0)\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5a51656ac0e9b8c4",
+        "type": "function",
+        "z": "78be727fa7e059d9",
+        "name": "function 2",
+        "func": "global.set('report_interval', global.get('report_interval') + 1)\n\nvar query = `\n  from(bucket: \"gs_sensors\")\n  |> range(start: -${global.get('duration')}s)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"mqtt_consumer\")\n  |> yield(name: \"last\")\n`;\n  \nmsg.query = query\n\nreturn msg\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 420,
+        "wires": [
+            [
+                "310f4e6206e4edb5"
+            ]
+        ]
+    },
+    {
+        "id": "72f5958d82209a57",
+        "type": "inject",
+        "z": "78be727fa7e059d9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 180,
+        "wires": [
+            [
+                "fa2cda845a3e813c"
+            ]
+        ]
+    },
+    {
+        "id": "fa2cda845a3e813c",
+        "type": "file in",
+        "z": "78be727fa7e059d9",
+        "name": "homes",
+        "filename": "/data/homes/homes.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 330,
+        "y": 180,
+        "wires": [
+            [
+                "03f86a3f1e1d4bea"
+            ]
+        ]
+    },
+    {
+        "id": "03f86a3f1e1d4bea",
+        "type": "csv",
+        "z": "78be727fa7e059d9",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 590,
+        "y": 180,
+        "wires": [
+            [
+                "07adb57d3dbafc0a"
+            ]
+        ]
+    },
+    {
+        "id": "07adb57d3dbafc0a",
+        "type": "function",
+        "z": "78be727fa7e059d9",
+        "name": "function 3",
+        "func": "global.set('homes', msg.payload)",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a64c98e68f19d89e",
+        "type": "debug",
+        "z": "78be727fa7e059d9",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 540,
+        "wires": []
+    }
+]

@@ -87,9 +87,7 @@ def publish_area_data(sensors, area, home):
             mqtt_client.publish(topic, f'{{"{sensor}":{data}}}')
             print(f"Published {topic}: {data}")
 
-        time.sleep(1)  # Breaks between publishing data (defined in config)
-        # Uncomment the line below if you want to see the published data in the console
-        # print(f"Published {sensor} data: {data}")
+        time.sleep(1)  
 
 # Publish data for each sensor
 threads=[]

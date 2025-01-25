@@ -25,9 +25,6 @@ with open(homesRecord, 'r') as hRecord:
 client_address = config['mqtt_setting']['client_address']
 port = int(config['mqtt_setting']['port'])
 
-# port = 1883
-# areas = 2
-# homes = 10
 
 sensors = ['electricity', 'water', 'natural_gas', 'air_pollution', 'crude_oil',\
            'solarProduction', 'hydrologicalProduction', 'windProduction', 'bioGasProduction'\
@@ -42,13 +39,6 @@ resouceUsageLimits = {
     'crude_oil' : 70
 }
 
-# forests = int(config['data_generation']['forests'])
-# areas = int(config['data_generation']['areas'])
-# time_sleep = int(config['data_generation']['time_sleep'])
-# sensors = config['data_generation']['sensors'].split('|')
-
-# mqtt_client = mqtt.Client()
-# mqtt_client.connect(client_address, port=port)
 dataSimulator = Sensor()
 
 def create_client():
@@ -85,7 +75,7 @@ def publish_area_data(sensors, area, home):
 
             topic = f"sensor/{sensor}/area_{area}/home_{home}"
             mqtt_client.publish(topic, f'{{"{sensor}":{data}}}')
-            print(f"Published {topic}: {data}")
+            # print(f"Published {topic}: {data}")
 
         time.sleep(1)  
 

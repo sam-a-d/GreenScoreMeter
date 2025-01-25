@@ -6,8 +6,11 @@ import threading
 from simulator import Sensor
 
 import csv
-csvFilepath="config.csv"
-homesRecord="homes.csv"
+csvFilepath="/data/setting/config.csv"
+homesRecord="/data/homes/homes.csv"
+
+config = configparser.ConfigParser()
+config.read('simulatorConf.ini')
 
 homes = dict()
 
@@ -19,26 +22,13 @@ with open(homesRecord, 'r') as hRecord:
 
         homes[row['Area']].append(row['House'])
 
-# with open(csvFilepath, 'r') as configFile:
-#     reader = csv.DictReader(configFile)
-#     for row in reader:
-#         if row['property'] == 'areas':
-#             areas = int(row['value'])
-#         if row['property'] == 'homes':
-#             homes = int(row['value'])
+client_address = config['mqtt_setting']['client_address']
+port = int(config['mqtt_setting']['port'])
 
-# homes = 5
-# areas = 2
-# Load MQTT configuration from file
-# config = configparser.ConfigParser()
-# config.read('config.ini')
-
-# client_address = config['mqtt']['client_address']
-client_address = 'localhost'
-# port = int(config['mqtt']['port'])
-port = 1883
+# port = 1883
 # areas = 2
 # homes = 10
+
 sensors = ['electricity', 'water', 'natural_gas', 'air_pollution', 'crude_oil',\
            'solarProduction', 'hydrologicalProduction', 'windProduction', 'bioGasProduction'\
             ]
@@ -93,7 +83,7 @@ def publish_area_data(sensors, area, home):
             elif sensor == 'bioGasProduction':
                 data = dataSimulator.bioGasProductionPercentage()
 
-            topic = f"{sensor}/area_{area}/home_{home}"
+            topic = f"sensor/{sensor}/area_{area}/home_{home}"
             mqtt_client.publish(topic, f'{{"{sensor}":{data}}}')
             print(f"Published {topic}: {data}")
 

@@ -1,0 +1,9 @@
+property,value
+areas,2
+homes,10
+duration,weekly
+electricityLimit,500
+waterLimit,700
+natural_gasLimit,0.6
+air_pollutionLimit,300
+crude_oilLimit,70

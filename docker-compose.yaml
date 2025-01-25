@@ -76,6 +76,8 @@ services:
     restart: no
     volumes:
       - ./nodered_data:/data
+      - ./config.csv:/data/setting/config.csv
+      - ./homes.csv:/data/homes/homes.csv
     ports:
       - '1880:1880'
     networks:

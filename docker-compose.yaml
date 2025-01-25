@@ -84,6 +84,20 @@ services:
       gs-network:
         ipv4_address: 170.30.0.104
 
+  data-producer:
+    container_name: data-priducer-gs
+    build: 
+      context: ./SensorSimulation/
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./config.csv:/data/setting/config.csv
+      - ./homes.csv:/data/homes/homes.csv
+    depends_on:
+      - mqtt
+    networks:
+      gs-network:
+        ipv4_address: 170.30.0.105
+
 networks:
   gs-network:
     driver: bridge

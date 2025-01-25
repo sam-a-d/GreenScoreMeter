@@ -5,7 +5,30 @@ import threading
 
 from simulator import Sensor
 
+import csv
+csvFilepath="config.csv"
+homesRecord="homes.csv"
 
+homes = dict()
+
+with open(homesRecord, 'r') as hRecord:
+    reader = csv.DictReader(hRecord)
+    for row in reader:
+        if row['Area'] not in homes.keys():
+            homes[row['Area']] = list()
+
+        homes[row['Area']].append(row['House'])
+
+# with open(csvFilepath, 'r') as configFile:
+#     reader = csv.DictReader(configFile)
+#     for row in reader:
+#         if row['property'] == 'areas':
+#             areas = int(row['value'])
+#         if row['property'] == 'homes':
+#             homes = int(row['value'])
+
+# homes = 5
+# areas = 2
 # Load MQTT configuration from file
 # config = configparser.ConfigParser()
 # config.read('config.ini')
@@ -14,8 +37,8 @@ from simulator import Sensor
 client_address = 'localhost'
 # port = int(config['mqtt']['port'])
 port = 1883
-areas = 2
-homes = 10
+# areas = 2
+# homes = 10
 sensors = ['electricity', 'water', 'natural_gas', 'air_pollution', 'crude_oil',\
            'solarProduction', 'hydrologicalProduction', 'windProduction', 'bioGasProduction'\
             ]
@@ -80,12 +103,12 @@ def publish_area_data(sensors, area, home):
 
 # Publish data for each sensor
 threads=[]
-for area in range(areas):
-    for home in range(homes):
+
+for area, houses in homes.items():
+    for home in houses:
         thread = threading.Thread(target=publish_area_data, args=(sensors, area, home))
         threads.append(thread)
         thread.start()
 
-# Wait for all threads to complete (which they won't, as they're infinite loops)
 for thread in threads:
     thread.join()

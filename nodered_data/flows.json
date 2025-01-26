@@ -2,7 +2,31 @@
     {
         "id": "78be727fa7e059d9",
         "type": "tab",
-        "label": "Flow 1",
+        "label": "Configurations",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ff131b979e6f962e",
+        "type": "tab",
+        "label": "MQTT to InfluxDB",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8e6a519a871d2a1c",
+        "type": "tab",
+        "label": "Compute Green Score",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ceb938cdade5faa3",
+        "type": "tab",
+        "label": "Alarm and Report",
         "disabled": false,
         "info": "",
         "env": []
@@ -26,7 +50,7 @@
         "id": "d39b7bc3b0a47ce4",
         "type": "mqtt-broker",
         "name": "mqtt",
-        "broker": "localhost",
+        "broker": "mqtt",
         "port": 1883,
         "clientid": "",
         "autoConnect": true,
@@ -54,58 +78,36 @@
         "sessionExpiry": ""
     },
     {
-        "id": "310f4e6206e4edb5",
-        "type": "influxdb in",
-        "z": "78be727fa7e059d9",
-        "influxdb": "2eea6dab767ce45c",
-        "name": "Database",
-        "query": "from(bucket: \"gs_sensors\")\n  |> range(start: 0)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"mqtt_consumer\")\n  |> limit(n: 7)\n  |> yield(name: \"last\")",
-        "rawOutput": false,
-        "precision": "",
-        "retentionPolicy": "",
-        "org": "se4iot",
-        "x": 500,
-        "y": 560,
-        "wires": [
-            [
-                "e2800a3c73513a9d"
-            ]
-        ]
-    },
-    {
-        "id": "3b8d787758925015",
-        "type": "inject",
-        "z": "78be727fa7e059d9",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "1",
-        "crontab": "",
-        "once": false,
-        "onceDelay": "1",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 110,
-        "y": 260,
-        "wires": [
-            [
-                "5a51656ac0e9b8c4"
-            ]
-        ]
+        "id": "1e5c597edc626429",
+        "type": "telegram bot",
+        "botname": "se4IoTGreenBot",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "testenvironment": false,
+        "updatemode": "polling",
+        "pollinterval": 300,
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": 6667,
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": 8443,
+        "publicbotport": 8443,
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
     },
     {
         "id": "efbcc5c90d227b86",
         "type": "file in",
         "z": "78be727fa7e059d9",
-        "name": "configurations",
+        "name": "Read configurations",
         "filename": "/data/setting/config.csv",
         "filenameType": "str",
         "format": "utf8",
@@ -113,8 +115,8 @@
         "sendError": false,
         "encoding": "none",
         "allProps": false,
-        "x": 360,
-        "y": 120,
+        "x": 480,
+        "y": 260,
         "wires": [
             [
                 "31c97c540927e253"
@@ -137,8 +139,8 @@
         "strings": true,
         "include_empty_strings": "",
         "include_null_values": "",
-        "x": 590,
-        "y": 120,
+        "x": 690,
+        "y": 260,
         "wires": [
             [
                 "9856030a9da6c187"
@@ -166,8 +168,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 110,
-        "y": 120,
+        "x": 210,
+        "y": 260,
         "wires": [
             [
                 "efbcc5c90d227b86"
@@ -175,61 +177,21 @@
         ]
     },
     {
-        "id": "e2800a3c73513a9d",
-        "type": "function",
-        "z": "78be727fa7e059d9",
-        "name": "green_score_calculation",
-        "func": "if(global.get('report_interval') == global.get('duration')){\n  var homes = global.get('homes')\n\n  for (let i = 0; i < homes.length; i++) {\n    var area = \"area_\" + homes[i].Area\n    var house = \"home_\" + homes[i].House\n    var phone = homes[i].Phone\n\n    var electricity_usage = 0\n    var water_usage = 0\n    var natural_gas_usage = 0\n    var air_polution_usage = 0\n    var crude_oil_usage = 0\n    var solar_production = 0\n    var hydrological_production = 0\n    var wind_production = 0\n    var biogas_production = 0\n\n\n    for (let j = 0; j < msg.payload.length; j++){\n      if (msg.payload[i].topic == 'air_pollution/'+area +'/' + house){\n        air_polution_usage = air_polution_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'electricity/'+area +'/' + house){\n        electricity_usage = electricity_usage + msg.payload[i]._value\n      }\n\n      if (msg.payload[i].topic == 'water/'+area +'/' + house){\n        water_usage = water_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'natural_gas/'+area +'/' + house){\n        natural_gas_usage = natural_gas_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'crude_oil/'+area +'/' + house){\n        crude_oil_usage = crude_oil_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'solarProduction/'+area +'/' + house){\n        solar_production = solar_production + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'hydrologicalProduction/'+area +'/' + house){\n        hydrological_production = hydrological_production + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'windProduction/' + area + '/' + house) {\n        wind_production = wind_production + msg.payload[i]._value\n      } \n      \n      if (msg.payload[i].topic == 'bioGasProduction/' + area + '/' + house) {\n        biogas_production = biogas_production + msg.payload[i]._value\n      }\n    }\n    \n  }\n\n  global.set('report_interval', 0) \n  // msg.payload = { air_polution_usage, electricity_usage, water_usage, natural_gas_usage, crude_oil_usage, solar_production, hydrological_production, wind_production, biogas_production }\n  msg.payload = msg.payload.length\n  return msg\n}\n\nmsg.payload = msg.payload.length\nreturn msg\n\n\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "// Code added here will be run once\n// whenever the node is started.\nfunction start(){\n    console\n}\n",
-        "finalize": "",
-        "libs": [],
-        "x": 710,
-        "y": 400,
-        "wires": [
-            [
-                "a64c98e68f19d89e"
-            ]
-        ]
-    },
-    {
         "id": "9856030a9da6c187",
         "type": "function",
         "z": "78be727fa7e059d9",
-        "name": "function 1",
-        "func": "if(msg.duration = \"weekly\"){\n    global.set(\"duration\", 30);\n}else if(msg.duration = \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.duration = \"yearly\"){\n    global.set(\"duration\", 365);\n}else{\n    global.set(\"duration\", 1);\n}\n\nglobal.set(\"configData\", msg)\n\nglobal.set(\"report_interval\", 0)\n",
+        "name": "set configurations",
+        "func": "if(msg.duration = \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.duration = \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.duration = \"yearly\"){\n    global.set(\"duration\", 365);\n}else{\n    global.set(\"duration\", 5);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 1)\n\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 860,
-        "y": 120,
+        "x": 990,
+        "y": 260,
         "wires": [
             []
-        ]
-    },
-    {
-        "id": "5a51656ac0e9b8c4",
-        "type": "function",
-        "z": "78be727fa7e059d9",
-        "name": "function 2",
-        "func": "global.set('report_interval', global.get('report_interval') + 1)\n\nvar query = `\n  from(bucket: \"gs_sensors\")\n  |> range(start: -${global.get('duration')}s)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"mqtt_consumer\")\n  |> yield(name: \"last\")\n`;\n  \nmsg.query = query\n\nreturn msg\n\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 320,
-        "y": 420,
-        "wires": [
-            [
-                "310f4e6206e4edb5"
-            ]
         ]
     },
     {
@@ -253,8 +215,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 110,
-        "y": 180,
+        "x": 210,
+        "y": 320,
         "wires": [
             [
                 "fa2cda845a3e813c"
@@ -265,7 +227,7 @@
         "id": "fa2cda845a3e813c",
         "type": "file in",
         "z": "78be727fa7e059d9",
-        "name": "homes",
+        "name": "Read homes",
         "filename": "/data/homes/homes.csv",
         "filenameType": "str",
         "format": "utf8",
@@ -273,8 +235,8 @@
         "sendError": false,
         "encoding": "none",
         "allProps": false,
-        "x": 330,
-        "y": 180,
+        "x": 450,
+        "y": 320,
         "wires": [
             [
                 "03f86a3f1e1d4bea"
@@ -297,8 +259,8 @@
         "strings": true,
         "include_empty_strings": "",
         "include_null_values": "",
-        "x": 590,
-        "y": 180,
+        "x": 690,
+        "y": 320,
         "wires": [
             [
                 "07adb57d3dbafc0a"
@@ -309,7 +271,7 @@
         "id": "07adb57d3dbafc0a",
         "type": "function",
         "z": "78be727fa7e059d9",
-        "name": "function 3",
+        "name": "set homes",
         "func": "global.set('homes', msg.payload)",
         "outputs": 1,
         "timeout": 0,
@@ -317,26 +279,402 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 860,
-        "y": 180,
+        "x": 970,
+        "y": 320,
         "wires": [
             []
         ]
     },
     {
-        "id": "a64c98e68f19d89e",
-        "type": "debug",
-        "z": "78be727fa7e059d9",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 960,
-        "y": 540,
+        "id": "147c8e33ddfcaaba",
+        "type": "mqtt in",
+        "z": "ff131b979e6f962e",
+        "name": "MQTT",
+        "topic": "sensor/#",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "d39b7bc3b0a47ce4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 350,
+        "y": 300,
+        "wires": [
+            [
+                "beacb1429d82c38e"
+            ]
+        ]
+    },
+    {
+        "id": "39537717202ae6b8",
+        "type": "influxdb out",
+        "z": "ff131b979e6f962e",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Database",
+        "measurement": "sensor",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "se4iot",
+        "bucket": "gs_sensors",
+        "x": 760,
+        "y": 300,
         "wires": []
+    },
+    {
+        "id": "beacb1429d82c38e",
+        "type": "function",
+        "z": "ff131b979e6f962e",
+        "name": "Format sensor data",
+        "func": "// Parse the topic\nlet topicParts = msg.topic.split('/');\nlet measurement = topicParts[0]; // \"sensor\"\nlet field = topicParts[1];       // \"wind\"\nlet area = topicParts[2];        // Extract \"area\"\nlet house = topicParts[3];       // Extract \"house\"\n\n// Prepare the payload for InfluxDB\nmsg.payload = [\n    {[field]: msg.payload[field]},\n    {\"area\": area, 'house':house, 'timestamp':Date.now()}\n];\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 300,
+        "wires": [
+            [
+                "39537717202ae6b8"
+            ]
+        ]
+    },
+    {
+        "id": "310f4e6206e4edb5",
+        "type": "influxdb in",
+        "z": "8e6a519a871d2a1c",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Database",
+        "query": "",
+        "rawOutput": false,
+        "precision": "",
+        "retentionPolicy": "",
+        "org": "se4iot",
+        "x": 500,
+        "y": 200,
+        "wires": [
+            [
+                "e2800a3c73513a9d"
+            ]
+        ]
+    },
+    {
+        "id": "3b8d787758925015",
+        "type": "inject",
+        "z": "8e6a519a871d2a1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 220,
+        "wires": [
+            [
+                "5a51656ac0e9b8c4"
+            ]
+        ]
+    },
+    {
+        "id": "e2800a3c73513a9d",
+        "type": "function",
+        "z": "8e6a519a871d2a1c",
+        "name": "green_score_calculation",
+        "func": "// Retrieve the homes and measures from global context\nvar homes = global.get('homes');\n\n// set the metrics array\nvar measures = [\n    \"air_pollution\", \"bioGasProduction\", \"crude_oil\",\n    \"electricity\", \"hydrologicalProduction\", \"natural_gas\",\n    \"solarProduction\", \"water\", \"windProduction\"\n];\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\n// Initialize the consumption dictionary    \nvar consumption = {};\n\n// Initialize the greenscore dictionary\nvar greenScores = {};\n\nfor (let key in homes) {\n    \n    let houses = homes[key][\"House\"].split(\", \").map(h => h.trim());\n\n    // Iterate over each house\n    houses.forEach(house => {\n        // Create a dictionary with measures as keys and all values set to zero\n        consumption[\"home_\" + house] = {};\n        measures.forEach(measure => {\n            consumption[\"home_\" + house][measure] = 0;\n            // consumption[\"home_\" + house][\"houseName\"] = house\n        });\n    });\n\n}\n\n//populate the consumption dictionary with values consumed and produced.\nfor (let i = 0; i < msg.payload.length; i++) {\n    var sensorReading = msg.payload[i]\n    var house_name = sensorReading.house\n    consumption[house_name][sensorReading['_field']] += sensorReading['_value']\n}\n\n\n//compute the green score for each household\nfor (var house in consumption) {\n    var consumption_data = consumption[house]\n    var score = 0\n\n    // add consumption score\n    for (let limit in limits) {\n        if(consumption_data[limit] < limits[limit]){\n            score += 1\n        }\n    }\n\n    // add production score\n    if (\n        (consumption_data[\"solarProduction\"] > (0.7 * limits[\"electricity\"])) ||\n        (consumption_data[\"windProduction\"] > (0.7 * limits[\"electricity\"])) ||\n        (consumption_data[\"hydrologicalProduction\"] > (0.7 * limits[\"electricity\"]))\n    ) {\n        score += 1;\n    }\n\n    if (consumption_data[\"windProduction\"] > (0.25 * limits[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"solarProduction\"] > (0.25 * limits[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"hydrologicalProduction\"] > (0.25 * limits[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"bioGasProduction\"] > (0.25 * limits[\"natural_gas\"])) {\n        score += 1\n    }\n\n    greenScores[house] = score\n}\n\n// Set the output payload to the consumption dictionary\nmsg.payload = greenScores\n\nglobal.set(\"consumption_data\", consumption)\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nfunction start(){\n    console\n}\n",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 440,
+        "wires": [
+            [
+                "0deb30e37e802344"
+            ]
+        ]
+    },
+    {
+        "id": "5a51656ac0e9b8c4",
+        "type": "function",
+        "z": "8e6a519a871d2a1c",
+        "name": "Dynamic Database Query ",
+        "func": "global.set('report_interval', global.get('report_interval') + 1)\n\nvar query = `from(bucket: \"gs_sensors\")\n  |> range(start: -${global.get('duration')}s)\n  |> filter(fn: (r) => r._measurement == \"sensor\")\n`;\n\nmsg.query = query \n\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 460,
+        "wires": [
+            [
+                "310f4e6206e4edb5"
+            ]
+        ]
+    },
+    {
+        "id": "4c76d3a3435cb4ba",
+        "type": "influxdb out",
+        "z": "8e6a519a871d2a1c",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Database",
+        "measurement": "greenScores",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "se4iot",
+        "bucket": "gs_sensors",
+        "x": 1060,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "0deb30e37e802344",
+        "type": "function",
+        "z": "8e6a519a871d2a1c",
+        "name": "format scores for DB",
+        "func": "var output = []\n\nfor (let consumption in msg.payload) {\n        output.push([\n            {\n                consumption : msg.payload[consumption]\n            },\n            {\n                'house': consumption\n            }\n        ])\n}\n\nmsg.payload = output\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 200,
+        "wires": [
+            [
+                "4c76d3a3435cb4ba"
+            ]
+        ]
+    },
+    {
+        "id": "08b562de999f9f95",
+        "type": "inject",
+        "z": "ceb938cdade5faa3",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.5",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 420,
+        "wires": [
+            [
+                "dbca8a820d5f18ee",
+                "fdce4cefe9a5de8a"
+            ]
+        ]
+    },
+    {
+        "id": "13a3e925d0edb7b5",
+        "type": "http request",
+        "z": "ceb938cdade5faa3",
+        "name": "Send Watsapp",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://api.twilio.com/2010-04-01/Accounts/ACa2a6b2e5f6971bc8c37d6d05c127c636/Messages.json",
+        "tls": "",
+        "persist": true,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1060,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ed128da7c42521be",
+        "type": "function",
+        "z": "ceb938cdade5faa3",
+        "name": "Compute report",
+        "func": "if (global.get('report_interval') == global.get('duration')) {\n    var homes = global.get('homes');\n    var interval_name = global.get('configData')[2].value;\n    var messages = [];\n\n    // Loop through the houses in msg.payload\n    for (let house in msg.payload) {\n        var houseName = msg.payload[house]['house'].replace(\"home_\", \"\");\n\n        // Loop through the homes global variable\n        for (let id in homes) {\n            if (homes[id]['House'] == houseName) {\n                let phoneNo = \"whatsapp:\"+ homes[id].Phone;\n                let consumption = msg.payload[house]['_value'];\n\n                // Construct the message\n                let writeup = `Dear ${houseName}, \n                                \\n Your ${interval_name} green score report\n                                is *${consumption} / 10* \\n \\n\n                                Stay Green`;\n\n                let message = {\n                    To:   \"whatsapp:+23408107403558\",\n                    From: \"whatsapp:+14155238886\", // Replace with your Twilio WhatsApp number\n                    Body: writeup\n                };\n\n                // Push the message to the array\n                messages.push(message);\n            }\n        }\n    }\n\n    msg.payload = messages\n\n    // refresh duration counter\n    global.set('report_interval', 1) \n     \n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 160,
+        "wires": [
+            [
+                "de2459174e100f51"
+            ]
+        ]
+    },
+    {
+        "id": "a79a59d927aabd51",
+        "type": "influxdb in",
+        "z": "ceb938cdade5faa3",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Green Score DB",
+        "query": "",
+        "rawOutput": false,
+        "precision": "",
+        "retentionPolicy": "",
+        "org": "se4iot",
+        "x": 380,
+        "y": 160,
+        "wires": [
+            [
+                "ed128da7c42521be"
+            ]
+        ]
+    },
+    {
+        "id": "fdce4cefe9a5de8a",
+        "type": "function",
+        "z": "ceb938cdade5faa3",
+        "name": "Dynamic Query",
+        "func": "var query = `from(bucket: \"gs_sensors\")\n  |> range(start: -1s)\n  |> filter(fn: (r) => r._measurement == \"greenScores\")\n`;\n\nmsg.query = query \n\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 180,
+        "y": 160,
+        "wires": [
+            [
+                "a79a59d927aabd51"
+            ]
+        ]
+    },
+    {
+        "id": "dbca8a820d5f18ee",
+        "type": "function",
+        "z": "ceb938cdade5faa3",
+        "name": "Get Consumption Data",
+        "func": "msg.payload = global.get('consumption_data')\n\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 180,
+        "y": 640,
+        "wires": [
+            [
+                "0561198f0140e2ba"
+            ]
+        ]
+    },
+    {
+        "id": "de2459174e100f51",
+        "type": "split",
+        "z": "ceb938cdade5faa3",
+        "name": "Trigger Notification",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload",
+        "x": 550,
+        "y": 360,
+        "wires": [
+            [
+                "cb2b162d80a15458"
+            ]
+        ]
+    },
+    {
+        "id": "cb2b162d80a15458",
+        "type": "function",
+        "z": "ceb938cdade5faa3",
+        "name": "Configure Message",
+        "func": "// Twilio Credentials\nconst accountSID = \"accountSID\";\nconst authToken = \"authToken\";\n\n// Message details\nmsg.headers = {\n    Authorization: \"Basic \" + Buffer.from(accountSID + \":\" + authToken).toString(\"base64\"),\n    \"Content-Type\": \"application/x-www-form-urlencoded\"\n};\n\nmsg.payload = msg.payload\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0561198f0140e2ba",
+        "type": "split",
+        "z": "ceb938cdade5faa3",
+        "name": "Trigger Notification",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "topic",
+        "property": "payload",
+        "x": 550,
+        "y": 480,
+        "wires": [
+            [
+                "0beb1016ecb5b026"
+            ]
+        ]
+    },
+    {
+        "id": "0beb1016ecb5b026",
+        "type": "function",
+        "z": "ceb938cdade5faa3",
+        "name": "Configure Message",
+        "func": "var homes = global.get('homes');\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\nvar consumption = msg.payload\n\nvar excesses = []\n\nfor (let limit in limits) {\n    if(consumption[limit] >= 0.80 * limits[limit]){\n        excesses.push(limit)\n        }\n}\n\n    // If limits exceeded\n\nif(excesses.length > 0){\n\n    for (let key in homes) {\n        if(\"home_\" + homes[key][\"House\"] == msg.topic){\n            var phone = msg.payload= homes[key].Phone\n            var house = homes[key][\"House\"]\n        } \n    }\n\n    var message = `Dear ${house}, this is a notification that you have exceeded 80% utilization for ${excesses.join(\",\")}. /n You might want to consider reducing the consumption to meet our green goal`;\n\n    // Twilio Credentials\n    const accountSID = \"accountSID\";\n    const authToken = \"authToken\";\n\n    // Message details\n    msg.headers = {\n        Authorization: \"Basic \" + Buffer.from(accountSID + \":\" + authToken).toString(\"base64\"),\n        \"Content-Type\": \"application/x-www-form-urlencoded\"\n    };\n\n    msg.payload = {\n            To: \"whatsapp:+2348107403558\",\n            From: \"whatsapp:+14155238886\", \n            Body: message \n        };\n\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 480,
+        "wires": [
+            []
+        ]
     }
 ]

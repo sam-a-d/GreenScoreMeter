@@ -11,7 +11,7 @@ class Sensor:
     def __init__(\
                     self, electricity=(1.5,25),\
                     water=(0.3,35), natural_gas=(0, 0.03),\
-                    air_pollution=(0.3,17), crude_oil=(0.3,0.33),\
+                    air_pollution=(0.3,17), crude_oil=(0.3,3.33),\
                 ):
         
         self.electricity = electricity
@@ -88,9 +88,3 @@ class Sensor:
     # def renewableEnergyProduction(self, *args):
     #     return self.__biased_random()
 
-
-# S = Sensor()
-
-# print(S.getElectricity())
-# print(S.getSolarProductionPercentage())
-# print(S.getWindProductionPercentage())

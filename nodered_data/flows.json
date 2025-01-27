@@ -181,7 +181,7 @@
         "type": "function",
         "z": "78be727fa7e059d9",
         "name": "set configurations",
-        "func": "\nif(msg.payload[2].value == \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.payload[2].value == \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.payload[2].value == \"yearly\"){\n    global.set(\"duration\", 365);\n}else if(msg.payload[2].value == \"daily\"){\n    global.set(\"duration\", 4);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 0)\n\nmsg.payload = global.get('configData')\nreturn msg",
+        "func": "\nif(msg.payload[2].value == \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.payload[2].value == \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.payload[2].value == \"yearly\"){\n    global.set(\"duration\", 365);\n}else if(msg.payload[2].value == \"daily\"){\n    global.set(\"duration\", 1);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 0)\n\nmsg.payload = global.get('configData')\nreturn msg",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -606,11 +606,9 @@
         "addname": "topic",
         "property": "payload",
         "x": 710,
-        "y": 300,
+        "y": 280,
         "wires": [
-            [
-                "a92731b37d331cf5"
-            ]
+            []
         ]
     },
     {
@@ -648,9 +646,7 @@
         "x": 810,
         "y": 580,
         "wires": [
-            [
-                "a92731b37d331cf5"
-            ]
+            []
         ]
     }
 ]

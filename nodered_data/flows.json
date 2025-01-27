@@ -181,7 +181,7 @@
         "type": "function",
         "z": "78be727fa7e059d9",
         "name": "set configurations",
-        "func": "if(msg.duration = \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.duration = \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.duration = \"yearly\"){\n    global.set(\"duration\", 365);\n}else{\n    global.set(\"duration\", 5);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 1)\n\n",
+        "func": "\nif(msg.payload[2].value = \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.payload[2].value = \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.payload[2].value = \"yearly\"){\n    global.set(\"duration\", 365);\n}else if(msg.payload[2].value = \"daily\"){\n    global.set(\"duration\", 1);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 0)\n\nmsg.payload = global.get('configData')\nreturn msg",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -527,7 +527,7 @@
         "type": "function",
         "z": "ceb938cdade5faa3",
         "name": "Compute report",
-        "func": "if (global.get('report_interval') == global.get('duration')) {\n    var homes = global.get('homes');\n    var interval_name = global.get('configData')[2].value;\n    var messages = [];\n\n    // Loop through the houses in msg.payload\n    for (let house in msg.payload) {\n        var houseName = msg.payload[house]['house'].replace(\"home_\", \"\");\n\n        // Loop through the homes global variable\n        for (let id in homes) {\n            if (homes[id]['House'] == houseName) {\n                let phoneNo = \"whatsapp:\"+ homes[id].Phone;\n                let consumption = msg.payload[house]['_value'];\n\n                // Construct the message\n                let writeup = `Dear ${houseName}, \n                                \\n Your ${interval_name} green score report\n                                is *${consumption} / 10* \\n \\n\n                                Stay Green`;\n\n                let message = {\n                    To:   \"whatsapp:+23408107403558\",\n                    From: \"whatsapp:+14155238886\", // Replace with your Twilio WhatsApp number\n                    Body: writeup\n                };\n\n                // Push the message to the array\n                messages.push(message);\n            }\n        }\n    }\n\n    msg.payload = messages\n\n    // refresh duration counter\n    global.set('report_interval', 1) \n     \n    return msg;\n}\n",
+        "func": "if (global.get('report_interval') == global.get('duration')) {\n    var homes = global.get('homes');\n    var interval_name = global.get('configData')[2].value;\n    var messages = [];\n\n    const greenscores = msg.payload.filter(item => item._field === \"greenscore\"); \n\n    // Loop through the houses in msg.payload\n    for (let house in greenscores) {\n        var houseName = greenscores[house]['house'].replace(\"home_\", \"\");\n\n        // Loop through the homes global variable\n        for (let id in homes) {\n            if (homes[id]['House'] == houseName) {\n                let phoneNo = \"whatsapp:\"+ homes[id].Phone;\n                let consumption = greenscores[house]['_value'];\n\n                // Construct the message\n                let writeup = `Dear ${houseName}, \n                                \\n Your ${interval_name} green score report\n                                is *${consumption} / 10* \\n \\n\n                                Stay Green`;\n\n                let message = {\n                    To:   \"whatsapp:+23408107403558\",\n                    From: \"whatsapp:+14155238886\", // Replace with your Twilio WhatsApp number\n                    Body: writeup\n                };\n\n                // Push the message to the array\n                messages.push(message);\n            }\n        }\n    }\n\n    msg.payload = messages;\n\n    // refresh duration counter\n    global.set('report_interval', 0) \n     \n    return msg;\n}\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -611,7 +611,7 @@
         "arraySplt": 1,
         "arraySpltType": "len",
         "stream": false,
-        "addname": "",
+        "addname": "topic",
         "property": "payload",
         "x": 550,
         "y": 360,
@@ -636,7 +636,9 @@
         "x": 830,
         "y": 360,
         "wires": [
-            []
+            [
+                "38f71a299e596145"
+            ]
         ]
     },
     {
@@ -676,5 +678,21 @@
         "wires": [
             []
         ]
+    },
+    {
+        "id": "38f71a299e596145",
+        "type": "debug",
+        "z": "ceb938cdade5faa3",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1000,
+        "y": 200,
+        "wires": []
     }
 ]

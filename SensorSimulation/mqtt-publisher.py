@@ -30,15 +30,6 @@ sensors = ['electricity', 'water', 'natural_gas', 'air_pollution', 'crude_oil',\
            'solarProduction', 'hydrologicalProduction', 'windProduction', 'bioGasProduction'\
             ]
 
-# This limit is suppose to set by the appropriate authority
-resouceUsageLimits = {
-    'electricity': 500,
-    'water': 700,
-    'natural_gas': 0.6,
-    'air_pollution': 300,
-    'crude_oil' : 70
-}
-
 dataSimulator = Sensor()
 
 def create_client():

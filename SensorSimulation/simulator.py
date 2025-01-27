@@ -65,22 +65,22 @@ class Sensor:
             return random.uniform(0.5, 1)  # Generate a number between 0.5-1
 
     # 1. Solar energy production --> Linked with electricity consumption 
-    def getSolarProductionPercentage(self, *args):
+    def getSolarProduction(self, *args):
         
         return self.genElectricity * self.__biased_random()
 
     # 2. Hydrological energy production  --> Linked with electricity consumption
-    def getHydrologicalProductionPercentage(self):
+    def getHydrologicalProduction(self):
 
         return self.genElectricity * self.__biased_random()
 
     # 3. Wind energy production --> Linked with electricity consumption
-    def getWindProductionPercentage(self, *args):
+    def getWindProduction(self, *args):
         
         return self.genElectricity * self.__biased_random()
 
     # 4. Biogas production --> Linked with natural gas consumption
-    def bioGasProductionPercentage(self, *args):
+    def getBioGasProduction(self, *args):
         
         return self.genNaturalGas * self.__biased_random()
 

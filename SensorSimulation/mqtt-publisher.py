@@ -65,13 +65,13 @@ def publish_area_data(sensors, area, home):
             elif sensor == 'crude_oil':
                 data = dataSimulator.getCrudeOil()
             elif sensor == 'solarProduction':
-                data = dataSimulator.getSolarProductionPercentage()
+                data = dataSimulator.getSolarProduction()
             elif sensor == 'hydrologicalProduction':
-                data = dataSimulator.getHydrologicalProductionPercentage()
+                data = dataSimulator.getHydrologicalProduction()
             elif sensor == 'windProduction':
-                data = dataSimulator.getWindProductionPercentage()
+                data = dataSimulator.getWindProduction()
             elif sensor == 'bioGasProduction':
-                data = dataSimulator.bioGasProductionPercentage()
+                data = dataSimulator.getBioGasProduction()
 
             topic = f"sensor/{sensor}/area_{area}/home_{home}"
             mqtt_client.publish(topic, f'{{"{sensor}":{data}}}')

@@ -191,9 +191,7 @@
         "x": 990,
         "y": 260,
         "wires": [
-            [
-                "70bc82c866d8f285"
-            ]
+            []
         ]
     },
     {
@@ -286,22 +284,6 @@
         "wires": [
             []
         ]
-    },
-    {
-        "id": "70bc82c866d8f285",
-        "type": "debug",
-        "z": "78be727fa7e059d9",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1100,
-        "y": 120,
-        "wires": []
     },
     {
         "id": "147c8e33ddfcaaba",
@@ -473,7 +455,7 @@
         "type": "function",
         "z": "8e6a519a871d2a1c",
         "name": "format scores for DB",
-        "func": "var output = []\nvar scores = msg.payload[0]\nvar consumptions = msg.payload[1]\n\nfor (let score in scores) {\n        output.push([\n            {\n                greenscore : scores[score],\n                air_pollution: consumptions[score].air_pollution,\n                bioGasProduction: consumptions[score].bioGasProduction, \n                electricity: consumptions[score].electricity,\n                hydrologicalProduction: consumptions[score].hydrologicalProduction,\n                natural_gas: consumptions[score].natural_gas,\n                solarProduction: consumptions[score].solarProduction,\n                water: consumptions[score].water,\n                windProduction: consumptions[score].windProduction,\n                crude_oil: consumptions[score].crude_oil,\n            },\n            {\n                'house': score\n            }\n        ])\n}\n\nmsg.payload = output\n\nreturn msg;",
+        "func": "var output = []\nvar scores = msg.payload[0]\nvar consumptions = msg.payload[1]\n\nif (global.get('report_interval') == global.get('duration')){\n    for (let score in scores) {\n            output.push([\n                {\n                    greenscore : scores[score],\n                    air_pollution: consumptions[score].air_pollution,\n                    bioGasProduction: consumptions[score].bioGasProduction, \n                    electricity: consumptions[score].electricity,\n                    hydrologicalProduction: consumptions[score].hydrologicalProduction,\n                    natural_gas: consumptions[score].natural_gas,\n                    solarProduction: consumptions[score].solarProduction,\n                    water: consumptions[score].water,\n                    windProduction: consumptions[score].windProduction,\n                    crude_oil: consumptions[score].crude_oil,\n                },\n                {\n                    'house': score\n                }\n            ])\n    }\n}else{\n    for (let score in scores) {\n            output.push([\n                {\n                    air_pollution: consumptions[score].air_pollution,\n                    bioGasProduction: consumptions[score].bioGasProduction, \n                    electricity: consumptions[score].electricity,\n                    hydrologicalProduction: consumptions[score].hydrologicalProduction,\n                    natural_gas: consumptions[score].natural_gas,\n                    solarProduction: consumptions[score].solarProduction,\n                    water: consumptions[score].water,\n                    windProduction: consumptions[score].windProduction,\n                    crude_oil: consumptions[score].crude_oil,\n                },\n                {\n                    'house': score\n                }\n            ])\n    }\n}\nmsg.payload = output\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -626,7 +608,9 @@
         "x": 710,
         "y": 300,
         "wires": [
-            []
+            [
+                "a92731b37d331cf5"
+            ]
         ]
     },
     {
@@ -664,7 +648,9 @@
         "x": 810,
         "y": 580,
         "wires": [
-            []
+            [
+                "a92731b37d331cf5"
+            ]
         ]
     }
 ]

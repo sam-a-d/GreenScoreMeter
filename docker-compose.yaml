@@ -53,23 +53,6 @@ services:
       gs-network:
         ipv4_address: 170.30.0.103
 
-  telegraf:
-    image: telegraf
-    container_name: telegraf-gs
-    restart: no
-    volumes:
-      - ./telegraf:/etc/telegraf:ro
-    depends_on:
-      - influxdb
-      - mqtt
-    links:
-      - influxdb
-    ports:
-      - '8125:8125'
-    networks:
-      gs-network:
-        ipv4_address: 170.30.0.101
-
   nodered:
     image: nodered/node-red
     container_name: nodered-gs

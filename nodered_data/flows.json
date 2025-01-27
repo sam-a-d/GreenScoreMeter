@@ -26,14 +26,6 @@
     {
         "id": "79331bef8f894ef6",
         "type": "tab",
-        "label": "Alarm and ",
-        "disabled": false,
-        "info": "",
-        "env": []
-    },
-    {
-        "id": "780c719ab63758c0",
-        "type": "tab",
         "label": "Alarm and Report",
         "disabled": false,
         "info": "",
@@ -189,7 +181,7 @@
         "type": "function",
         "z": "78be727fa7e059d9",
         "name": "set configurations",
-        "func": "\nif(msg.payload[2].value == \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.payload[2].value == \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.payload[2].value == \"yearly\"){\n    global.set(\"duration\", 365);\n}else if(msg.payload[2].value == \"daily\"){\n    global.set(\"duration\", 4);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 0)\n\nmsg.payload = global.get('duration')\nreturn msg",
+        "func": "\nif(msg.payload[2].value == \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.payload[2].value == \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.payload[2].value == \"yearly\"){\n    global.set(\"duration\", 365);\n}else if(msg.payload[2].value == \"daily\"){\n    global.set(\"duration\", 4);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 0)\n\nmsg.payload = global.get('configData')\nreturn msg",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -199,7 +191,9 @@
         "x": 990,
         "y": 260,
         "wires": [
-            []
+            [
+                "70bc82c866d8f285"
+            ]
         ]
     },
     {
@@ -292,6 +286,22 @@
         "wires": [
             []
         ]
+    },
+    {
+        "id": "70bc82c866d8f285",
+        "type": "debug",
+        "z": "78be727fa7e059d9",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1100,
+        "y": 120,
+        "wires": []
     },
     {
         "id": "147c8e33ddfcaaba",
@@ -405,7 +415,7 @@
         "type": "function",
         "z": "8e6a519a871d2a1c",
         "name": "green_score_calculation",
-        "func": "// Retrieve the homes and measures from global context\nvar homes = global.get('homes');\n\n// set the metrics array\nvar measures = [\n    \"air_pollution\", \"bioGasProduction\", \"crude_oil\",\n    \"electricity\", \"hydrologicalProduction\", \"natural_gas\",\n    \"solarProduction\", \"water\", \"windProduction\"\n];\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\n// Initialize the consumption dictionary    \nvar consumption = {};\n\n// Initialize the greenscore dictionary\nvar greenScores = {};\n\nfor (let key in homes) {\n    \n    let houses = homes[key][\"House\"].split(\", \").map(h => h.trim());\n\n    // Iterate over each house\n    houses.forEach(house => {\n        // Create a dictionary with measures as keys and all values set to zero\n        consumption[\"home_\" + house] = {};\n        measures.forEach(measure => {\n            consumption[\"home_\" + house][measure] = 0;\n            // consumption[\"home_\" + house][\"houseName\"] = house\n        });\n    });\n\n}\n\n//populate the consumption dictionary with values consumed and produced.\nfor (let i = 0; i < msg.payload.length; i++) {\n    var sensorReading = msg.payload[i]\n    var house_name = sensorReading.house\n    consumption[house_name][sensorReading['_field']] += sensorReading['_value']\n}\n\n\n//compute the green score for each household\nfor (var house in consumption) {\n    var consumption_data = consumption[house]\n    var score = 0\n\n    // add consumption score\n    for (let limit in limits) {\n        if(consumption_data[limit] < limits[limit]){\n            score += 1\n        }\n    }\n\n    // add production score\n    if (\n        (consumption_data[\"solarProduction\"] > (0.7 * limits[\"electricity\"])) ||\n        (consumption_data[\"windProduction\"] > (0.7 * limits[\"electricity\"])) ||\n        (consumption_data[\"hydrologicalProduction\"] > (0.7 * limits[\"electricity\"]))\n    ) {\n        score += 1;\n    }\n\n    if (consumption_data[\"windProduction\"] > (0.25 * limits[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"solarProduction\"] > (0.25 * limits[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"hydrologicalProduction\"] > (0.25 * limits[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"bioGasProduction\"] > (0.25 * limits[\"natural_gas\"])) {\n        score += 1\n    }\n\n    greenScores[house] = score\n}\n\n// Set the output payload to the consumption dictionary\nmsg.payload = [greenScores, consumption, limits]\n\nglobal.set(\"consumption_data\", consumption)\n\nreturn msg;\n",
+        "func": "// Retrieve the homes and measures from global context\nvar homes = global.get('homes');\n\n// set the metrics array\nvar measures = [\n    \"air_pollution\", \"bioGasProduction\", \"crude_oil\",\n    \"electricity\", \"hydrologicalProduction\", \"natural_gas\",\n    \"solarProduction\", \"water\", \"windProduction\"\n];\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\n// Initialize the consumption dictionary    \nvar consumption = {};\n\n// Initialize the greenscore dictionary\nvar greenScores = {};\n\nfor (let key in homes) {\n    \n    let houses = homes[key][\"House\"].split(\", \").map(h => h.trim());\n\n    // Iterate over each house\n    houses.forEach(house => {\n        // Create a dictionary with measures as keys and all values set to zero\n        consumption[\"home_\" + house] = {};\n        measures.forEach(measure => {\n            consumption[\"home_\" + house][measure] = 0;\n            // consumption[\"home_\" + house][\"houseName\"] = house\n        });\n    });\n\n}\n\n//populate the consumption dictionary with values consumed and produced.\nfor (let i = 0; i < msg.payload.length; i++) {\n    var sensorReading = msg.payload[i]\n    var house_name = sensorReading.house\n    consumption[house_name][sensorReading['_field']] += sensorReading['_value']\n}\n\n\n//compute the green score for each household\nfor (var house in consumption) {\n    var consumption_data = consumption[house]\n    var score = 0\n\n    // add consumption score\n    for (let limit in limits) {\n        if(consumption_data[limit] < limits[limit]){\n            score += 1\n        }\n    }\n\n    // add production score\n    if (\n        (consumption_data[\"solarProduction\"] > (0.7 * consumption_data[\"electricity\"])) ||\n        (consumption_data[\"windProduction\"] > (0.7 * consumption_data[\"electricity\"])) ||\n        (consumption_data[\"hydrologicalProduction\"] > (0.7 * consumption_data[\"electricity\"]))\n    ) {\n        score += 1;\n    }\n\n    if (consumption_data[\"windProduction\"] > (0.25 * consumption_data[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"solarProduction\"] > (0.25 * consumption_data[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"hydrologicalProduction\"] > (0.25 * consumption_data[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"bioGasProduction\"] > (0.25 * consumption_data[\"natural_gas\"])) {\n        score += 1\n    }\n\n    greenScores[house] = score\n}\n\n// Set the output payload to the consumption dictionary\nmsg.payload = [greenScores, consumption, limits]\n\nglobal.set(\"consumption_data\", consumption)\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -486,8 +496,8 @@
         "bot": "1e5c597edc626429",
         "haserroroutput": false,
         "outputs": 1,
-        "x": 1010,
-        "y": 400,
+        "x": 1030,
+        "y": 360,
         "wires": [
             []
         ]
@@ -527,7 +537,7 @@
         "type": "function",
         "z": "79331bef8f894ef6",
         "name": "Compute report",
-        "func": "if (global.get('report_interval') == global.get('duration')) {\n    var homes = global.get('homes');\n    var interval_name = global.get('configData')[2].value;\n    var messages = [];\n\n    const greenscores = msg.payload.filter(item => item._field === \"greenscore\"); \n\n    // Loop through the houses in msg.payload\n    for (let house in greenscores) {\n        var houseName = greenscores[house]['house'].replace(\"home_\", \"\");\n\n        // Loop through the homes global variable\n        for (let id in homes) {\n            if (homes[id]['House'] == houseName) {\n                let phoneNo = homes[id].Phone;\n                let consumption = greenscores[house]['_value'];\n\n                // Construct the message\n                let writeup = `Dear ${houseName}, \n                                \\n Your ${interval_name} green score report\n                                is *${consumption} / 10* \\n \\n\n                                Stay Green`;\n\n                let message = {\n                    chatId: 7234652214,\n                    content: writeup,\n                    type: 'message'\n                };\n\n                // Push the message to the array\n                messages.push(message);\n            }\n        }\n    }\n\n    msg.payload = messages;\n\n    // refresh duration counter\n    global.set('report_interval', 0) \n     \n    return msg;\n}\n\n// msg.payload = {};\n// msg.payload.chatId = message.ChatID;\n// msg.payload.type = 'message';\n// msg.payload.content = message.body\n",
+        "func": "if (global.get('report_interval') == global.get('duration')) {\n    var homes = global.get('homes');\n    var interval_name = global.get('configData')[2].value;\n    var messages = [];\n\n    const greenscores = msg.payload.filter(item => item._field === \"greenscore\"); \n\n    // Loop through the houses in msg.payload\n    for (let house in greenscores) {\n        var houseName = greenscores[house]['house'].replace(\"home_\", \"\");\n\n        // Loop through the homes global variable\n        for (let id in homes) {\n            if (homes[id]['House'] == houseName) {\n                let phoneNo = homes[id].Phone;\n                let consumption = greenscores[house]['_value'];\n\n                // Construct the message\n                let writeup = `Dear ${houseName}, \n                                \\n Your ${interval_name} green score report\n                                is *${consumption} / 10* \\n \\n\n                                Stay Green`;\n\n                let message = {\n                    chatId: phoneNo,\n                    content: writeup,\n                    type: 'message'\n                };\n\n                // Push the message to the array\n                messages.push(message);\n            }\n        }\n    }\n\n    msg.payload = messages;\n\n    // refresh duration counter\n    global.set('report_interval', 0) \n     \n    return msg;\n}\n\n// msg.payload = {};\n// msg.payload.chatId = message.ChatID;\n// msg.payload.type = 'message';\n// msg.payload.content = message.body\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -535,7 +545,7 @@
         "finalize": "",
         "libs": [],
         "x": 620,
-        "y": 200,
+        "y": 100,
         "wires": [
             [
                 "451dcef9ba656c87"
@@ -553,7 +563,7 @@
         "precision": "",
         "retentionPolicy": "",
         "org": "se4iot",
-        "x": 400,
+        "x": 440,
         "y": 100,
         "wires": [
             [
@@ -573,7 +583,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 200,
+        "x": 240,
         "y": 100,
         "wires": [
             [
@@ -586,18 +596,18 @@
         "type": "function",
         "z": "79331bef8f894ef6",
         "name": "Get Consumption Data",
-        "func": "if (global.get('report_interval') < global.get('duration')) {\n    msg.payload = global.get('consumption_data')\n\n    return msg\n}",
+        "func": "if (global.get('report_interval') < global.get('duration')) {\n    msg.payload = global.get('consumption_data')\n\n    return msg\n}\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 200,
-        "y": 580,
+        "x": 420,
+        "y": 600,
         "wires": [
             [
-                "e3d298b889176b9b"
+                "873256f6fdc78fb1"
             ]
         ]
     },
@@ -613,8 +623,8 @@
         "stream": false,
         "addname": "topic",
         "property": "payload",
-        "x": 610,
-        "y": 380,
+        "x": 710,
+        "y": 300,
         "wires": [
             []
         ]
@@ -631,8 +641,8 @@
         "stream": false,
         "addname": "",
         "property": "payload",
-        "x": 570,
-        "y": 440,
+        "x": 670,
+        "y": 380,
         "wires": [
             [
                 "873256f6fdc78fb1"
@@ -644,225 +654,17 @@
         "type": "function",
         "z": "79331bef8f894ef6",
         "name": "Configure Message",
-        "func": "var homes = global.get('homes');\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\nvar consumption = msg.payload\n\nvar excesses = []\n\nfor (let limit in limits) {\n    if(consumption[limit] >= 0.80 * limits[limit]){\n        excesses.push(limit)\n        }\n}\n\n    // If limits exceeded\n\nif(excesses.length > 0){\n\n    for (let key in homes) {\n        if(\"home_\" + homes[key][\"House\"] == msg.topic){\n            var phone = msg.payload= homes[key].Phone\n            var house = homes[key][\"House\"]\n        } \n    }\n\n    var message = `Dear ${house}, this is a notification that you have exceeded 80% utilization for ${excesses.join(\",\")}. /n You might want to consider reducing the consumption to meet our green goal`;\n\n    msg.payload = {\n                chatId: 7234652214,\n                content: message,\n                type: 'message'\n        };\n\n    return msg;\n}\n",
+        "func": "var homes = global.get('homes');\nvar interval_name = global.get('configData')[2].value;\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\nvar consumption = msg.payload\n\nvar excesses = []\n\nfor (let limit in limits) {\n    if(consumption[limit] >= 0.80 * limits[limit]){\n        excesses.push(limit)\n        }\n}\n\n    // If limits exceeded\n\nif(excesses.length > 0){\n\n    for (let key in homes) {\n        if(\"home_\" + homes[key][\"House\"] == msg.parts.key){\n            var phone = msg.payload= homes[key].Phone\n            var house = homes[key][\"House\"]\n        } \n    }\n\n    var message = `Dear ${house}, \\n\\n This is a notification that you have exceeded 80% of your ${interval_name} utilization for ${excesses.join(\",\")}. \\n \\n You might want to consider reducing the consumption to meet our green goal`;\n\n    msg.payload = {\n                chatId: phone,\n                content: message,\n                type: 'message'\n        };\n\n    return msg;\n}\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 750,
+        "x": 810,
         "y": 580,
         "wires": [
             []
         ]
-    },
-    {
-        "id": "40d6816c3d1f0ea7",
-        "type": "inject",
-        "z": "780c719ab63758c0",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "1",
-        "crontab": "",
-        "once": true,
-        "onceDelay": "0.5",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 150,
-        "y": 420,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "fb04650b351e25b5",
-        "type": "http request",
-        "z": "780c719ab63758c0",
-        "name": "Send Watsapp",
-        "method": "POST",
-        "ret": "txt",
-        "paytoqs": "ignore",
-        "url": "https://api.twilio.com/2010-04-01/Accounts/ACa2a6b2e5f6971bc8c37d6d05c127c636/Messages.json",
-        "tls": "",
-        "persist": true,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 1060,
-        "y": 420,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "092834fac836d3cd",
-        "type": "function",
-        "z": "780c719ab63758c0",
-        "name": "Compute report",
-        "func": "if (global.get('report_interval') == global.get('duration')) {\n    var homes = global.get('homes');\n    var interval_name = global.get('configData')[2].value;\n    var messages = [];\n\n    const greenscores = msg.payload.filter(item => item._field === \"greenscore\"); \n\n    // Loop through the houses in msg.payload\n    for (let house in greenscores) {\n        var houseName = greenscores[house]['house'].replace(\"home_\", \"\");\n\n        // Loop through the homes global variable\n        for (let id in homes) {\n            if (homes[id]['House'] == houseName) {\n                let phoneNo = \"whatsapp:\"+ homes[id].Phone;\n                let consumption = greenscores[house]['_value'];\n\n                // Construct the message\n                let writeup = `Dear ${houseName}, \n                                \\n Your ${interval_name} green score report\n                                is *${consumption} / 10* \\n \\n\n                                Stay Green`;\n\n                let message = {\n                    To:   \"whatsapp:+23408107403558\",\n                    From: \"whatsapp:+14155238886\", // Replace with your Twilio WhatsApp number\n                    Body: writeup\n                };\n\n                // Push the message to the array\n                messages.push(message);\n            }\n        }\n    }\n\n    msg.payload = messages;\n\n    // refresh duration counter\n    global.set('report_interval', 0) \n     \n    return msg;\n}\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 580,
-        "y": 160,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "e004f35adc8523ee",
-        "type": "influxdb in",
-        "z": "780c719ab63758c0",
-        "influxdb": "2eea6dab767ce45c",
-        "name": "Green Score DB",
-        "query": "",
-        "rawOutput": false,
-        "precision": "",
-        "retentionPolicy": "",
-        "org": "se4iot",
-        "x": 380,
-        "y": 160,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "18903f17c0808911",
-        "type": "function",
-        "z": "780c719ab63758c0",
-        "name": "Dynamic Query",
-        "func": "var query = `from(bucket: \"gs_sensors\")\n  |> range(start: -1s)\n  |> filter(fn: (r) => r._measurement == \"greenScores\")\n`;\n\nmsg.query = query \n\nreturn msg",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 180,
-        "y": 160,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "6f3d1d186d6b22e6",
-        "type": "function",
-        "z": "780c719ab63758c0",
-        "name": "Get Consumption Data",
-        "func": "msg.payload = global.get('consumption_data')\n\nreturn msg",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 180,
-        "y": 640,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "4188696cce17bb7b",
-        "type": "split",
-        "z": "780c719ab63758c0",
-        "name": "Trigger Notification",
-        "splt": "\\n",
-        "spltType": "str",
-        "arraySplt": 1,
-        "arraySpltType": "len",
-        "stream": false,
-        "addname": "topic",
-        "property": "payload",
-        "x": 550,
-        "y": 360,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "e885592080aeefa3",
-        "type": "function",
-        "z": "780c719ab63758c0",
-        "name": "Configure Message",
-        "func": "// Twilio Credentials\nconst accountSID = \"accountSID\";\nconst authToken = \"authToken\";\n\n// Message details\nmsg.headers = {\n    Authorization: \"Basic \" + Buffer.from(accountSID + \":\" + authToken).toString(\"base64\"),\n    \"Content-Type\": \"application/x-www-form-urlencoded\"\n};\n\nmsg.payload = msg.payload\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 830,
-        "y": 360,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "ebb79a68a0de44d2",
-        "type": "split",
-        "z": "780c719ab63758c0",
-        "name": "Trigger Notification",
-        "splt": "\\n",
-        "spltType": "str",
-        "arraySplt": 1,
-        "arraySpltType": "len",
-        "stream": false,
-        "addname": "topic",
-        "property": "payload",
-        "x": 550,
-        "y": 480,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "0b1764098713840c",
-        "type": "function",
-        "z": "780c719ab63758c0",
-        "name": "Configure Message",
-        "func": "var homes = global.get('homes');\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\nvar consumption = msg.payload\n\nvar excesses = []\n\nfor (let limit in limits) {\n    if(consumption[limit] >= 0.80 * limits[limit]){\n        excesses.push(limit)\n        }\n}\n\n    // If limits exceeded\n\nif(excesses.length > 0){\n\n    for (let key in homes) {\n        if(\"home_\" + homes[key][\"House\"] == msg.topic){\n            var phone = msg.payload= homes[key].Phone\n            var house = homes[key][\"House\"]\n        } \n    }\n\n    var message = `Dear ${house}, this is a notification that you have exceeded 80% utilization for ${excesses.join(\",\")}. /n You might want to consider reducing the consumption to meet our green goal`;\n\n    // Twilio Credentials\n    const accountSID = \"accountSID\";\n    const authToken = \"authToken\";\n\n    // Message details\n    msg.headers = {\n        Authorization: \"Basic \" + Buffer.from(accountSID + \":\" + authToken).toString(\"base64\"),\n        \"Content-Type\": \"application/x-www-form-urlencoded\"\n    };\n\n    msg.payload = {\n            To: \"whatsapp:+2348107403558\",\n            From: \"whatsapp:+14155238886\", \n            Body: message \n        };\n\n    return msg;\n}\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 830,
-        "y": 480,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "e19f31f6e104afb4",
-        "type": "debug",
-        "z": "780c719ab63758c0",
-        "name": "debug 1",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1000,
-        "y": 200,
-        "wires": []
     }
 ]

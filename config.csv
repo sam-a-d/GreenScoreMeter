@@ -1,9 +1,9 @@
 property,value
 areas,2
 homes,10
-duration,daily
-electricityLimit,500
-waterLimit,700
-natural_gasLimit,0.6
-air_pollutionLimit,300
-crude_oilLimit,70
+duration,weekly
+electricityLimit,70
+waterLimit,120
+natural_gasLimit,1
+air_pollutionLimit,50
+crude_oilLimit,20

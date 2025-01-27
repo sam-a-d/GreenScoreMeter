@@ -9,9 +9,9 @@ class Sensor:
     '''
     
     def __init__(\
-                    self, electricity=(50,800),\
-                    water=(10,1000), natural_gas=(0, 1),\
-                    air_pollution=(10,500), crude_oil=(10,100),\
+                    self, electricity=(1.5,25),\
+                    water=(0.3,35), natural_gas=(0, 0.03),\
+                    air_pollution=(0.3,17), crude_oil=(0.3,0.33),\
                 ):
         
         self.electricity = electricity
@@ -19,13 +19,17 @@ class Sensor:
         self.natural_gas = natural_gas
         self.air_pollution = air_pollution
         self.crude_oil = crude_oil
+
+        # Storing the generated powers and pass them to the producer
+        self.genElectricity, self.genWater, self.genNaturalGas, self.genCrudeOil = (None, None, None, None);
     
     # Resource utilization unit -------
     # 1.
     def getElectricity(self, *args):
 
         self.electricity = args[0] if args else self.electricity
-        return round(random.uniform(*self.electricity), 2)
+        self.genElectricity = round(random.uniform(*self.electricity), 2)
+        return self.genElectricity
 
     # 2. 
     def getWater(self, *args):
@@ -37,7 +41,8 @@ class Sensor:
     def getNaturalGas(self, *args):
 
         self.natural_gas = args[0] if args else self.natural_gas
-        return round(random.uniform(*self.natural_gas), 2)
+        self.genNaturalGas = round(random.uniform(*self.natural_gas), 2)
+        return self.genNaturalGas
 
     # 4.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     def getCrudeOil(self, *args):
@@ -62,23 +67,30 @@ class Sensor:
     # 1. Solar energy production --> Linked with electricity consumption 
     def getSolarProductionPercentage(self, *args):
         
-        return self.__biased_random()
+        return self.genElectricity * self.__biased_random()
 
     # 2. Hydrological energy production  --> Linked with electricity consumption
     def getHydrologicalProductionPercentage(self):
 
-        return self.__biased_random()
+        return self.genElectricity * self.__biased_random()
 
     # 3. Wind energy production --> Linked with electricity consumption
     def getWindProductionPercentage(self, *args):
         
-        return self.__biased_random()
+        return self.genElectricity * self.__biased_random()
 
     # 4. Biogas production --> Linked with natural gas consumption
     def bioGasProductionPercentage(self, *args):
         
-        return self.__biased_random()
+        return self.genNaturalGas * self.__biased_random()
 
     # 1-4 RES ---> Renewable Energy Production
     # def renewableEnergyProduction(self, *args):
     #     return self.__biased_random()
+
+
+# S = Sensor()
+
+# print(S.getElectricity())
+# print(S.getSolarProductionPercentage())
+# print(S.getWindProductionPercentage())

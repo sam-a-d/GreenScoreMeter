@@ -23,8 +23,8 @@ services:
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=se4iot_token
       - DOCKER_INFLUXDB_INIT_ORG=se4iot
       - DOCKER_INFLUXDB_INIT_BUCKET=gs_sensors
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_USERNAME=se4iot_team3
+      - DOCKER_INFLUXDB_INIT_PASSWORD=se4iot_team3
     ports:
       - '8086:8086'
     volumes:
@@ -40,8 +40,8 @@ services:
     depends_on:
       - influxdb
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=se4iot_team3
+      - GF_SECURITY_ADMIN_PASSWORD=se4iot_team3
       - GF_INSTALL_PLUGINS=
     links:
       - influxdb
@@ -85,7 +85,7 @@ services:
         ipv4_address: 170.30.0.104
 
   data-producer:
-    container_name: data-priducer-gs
+    container_name: data-producer-gs
     build: 
       context: ./SensorSimulation/
       dockerfile: ./Dockerfile

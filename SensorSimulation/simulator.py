@@ -9,9 +9,12 @@ class Sensor:
     '''
     
     def __init__(\
-                    self, electricity=(1.5,25),\
-                    water=(0.3,35), natural_gas=(0, 0.03),\
-                    air_pollution=(0.3,17), crude_oil=(0.3,3.33),\
+                    self, \
+                    electricity=(1.5,25),   # watt-hour
+                    water=(0.3,35),         # gallon
+                    natural_gas=(0, 0.03),  # Cubic meter
+                    air_pollution=(0.3,17), # AQI
+                    crude_oil=(0.3,3.33),   # gallon
                 ):
         
         self.electricity = electricity

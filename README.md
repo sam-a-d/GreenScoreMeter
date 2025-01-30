@@ -7,13 +7,13 @@ The **Green Score Meter** is an IoT-based system designed to promote sustainabil
 - **Real-time Monitoring:** Collects and analyzes data on electricity, water, gas usage, and air pollution.
 - **Green Score Calculation:** Assigns a sustainability score to households based on energy efficiency.
 - **Visualization Dashboard:** Provides interactive insights using **Grafana**.
-- **MQTT-based Communication:** Uses **Mosquitto** and **MQTT** for efficient data transmission.
+- **MQTT-based Communication:** Uses **MQTT** for efficient data transmission.
 - **Dockerized System:** Simplifies deployment and scalability.
 
 ## Tech Stack
 
 - **Node-RED** - IoT data processing
-- **Mosquitto MQTT Broker** - Message communication
+- **MQTT Broker** - Message communication
 - **InfluxDB** - Time-series database for sensor data storage
 - **Grafana** - Data visualization
 - **Telegraf** - Data collection agent
@@ -35,7 +35,7 @@ The **Green Score Meter** is an IoT-based system designed to promote sustainabil
    ```
 2. Run the system using Docker:
    ```sh
-   docker-compose up -d
+   docker-compose up
    ```
 3. Access services:
    - **Node-RED UI**: `http://localhost:1880`
@@ -46,7 +46,7 @@ The **Green Score Meter** is an IoT-based system designed to promote sustainabil
 ## Usage
 
 1. **Configure Sensor Simulation**
-   - Edit `config.csv` to define household configurations.
+   - Edit `config.csv` to define household metrics configurations.
 2. **Monitor Live Data**
    - View live sensor readings on Grafana.
 3. **Analyze Green Score**

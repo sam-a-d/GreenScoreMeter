@@ -453,7 +453,7 @@
         "name": "node-red-contrib-telegrambot",
         "version": "16.1.2",
         "local": true,
-        "user": false,
+        "user": true,
         "nodes": {
             "telegrambot": {
                 "name": "telegrambot",
@@ -478,7 +478,7 @@
         "name": "node-red-node-telegrambot",
         "version": "0.1.6",
         "local": true,
-        "user": false,
+        "user": true,
         "nodes": {
             "telegrambot": {
                 "name": "telegrambot",

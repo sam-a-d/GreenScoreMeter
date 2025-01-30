@@ -471,20 +471,6 @@
         ]
     },
     {
-        "id": "a92731b37d331cf5",
-        "type": "telegram sender",
-        "z": "79331bef8f894ef6",
-        "name": "",
-        "bot": "1e5c597edc626429",
-        "haserroroutput": false,
-        "outputs": 1,
-        "x": 1030,
-        "y": 360,
-        "wires": [
-            []
-        ]
-    },
-    {
         "id": "d4799829fd1c0f56",
         "type": "inject",
         "z": "79331bef8f894ef6",
@@ -645,6 +631,20 @@
         "libs": [],
         "x": 810,
         "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6b0ce6fabb71a63d",
+        "type": "telegram sender",
+        "z": "79331bef8f894ef6",
+        "name": "",
+        "bot": "1e5c597edc626429",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 970,
+        "y": 360,
         "wires": [
             []
         ]

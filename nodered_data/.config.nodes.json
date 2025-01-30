@@ -453,7 +453,7 @@
         "name": "node-red-contrib-telegrambot",
         "version": "16.1.2",
         "local": true,
-        "user": false,
+        "user": true,
         "nodes": {
             "telegrambot": {
                 "name": "telegrambot",
@@ -471,27 +471,6 @@
                 "user": false,
                 "module": "node-red-contrib-telegrambot",
                 "file": "/data/node_modules/node-red-contrib-telegrambot/telegrambot/99-telegrambot.js"
-            }
-        }
-    },
-    "node-red-node-telegrambot": {
-        "name": "node-red-node-telegrambot",
-        "version": "0.1.6",
-        "local": true,
-        "user": false,
-        "nodes": {
-            "telegrambot": {
-                "name": "telegrambot",
-                "types": [
-                    "telegram client config",
-                    "telegram client receiver",
-                    "telegram client sender"
-                ],
-                "enabled": true,
-                "local": true,
-                "user": false,
-                "module": "node-red-node-telegrambot",
-                "file": "/data/node_modules/node-red-node-telegrambot/telegrambot/telegrambot.js"
             }
         }
     }

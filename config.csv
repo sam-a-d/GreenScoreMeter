@@ -7,3 +7,8 @@ waterLimit,20
 natural_gasLimit,0.02
 air_pollutionLimit,10
 crude_oilLimit,1.5
+electricity_range,(1.5-25)
+water_range,(0.3-35)
+natural_gas_range,(0-0.03)
+air_pollution_range,(0.3-17) 
+crude_oil_range,(0.3-3.33)

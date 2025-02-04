@@ -2,7 +2,31 @@
     {
         "id": "78be727fa7e059d9",
         "type": "tab",
-        "label": "Flow 1",
+        "label": "Configurations",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ff131b979e6f962e",
+        "type": "tab",
+        "label": "MQTT to InfluxDB",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8e6a519a871d2a1c",
+        "type": "tab",
+        "label": "Compute Green Score",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "79331bef8f894ef6",
+        "type": "tab",
+        "label": "Alarm and Report",
         "disabled": false,
         "info": "",
         "env": []
@@ -26,7 +50,7 @@
         "id": "d39b7bc3b0a47ce4",
         "type": "mqtt-broker",
         "name": "mqtt",
-        "broker": "localhost",
+        "broker": "mqtt",
         "port": 1883,
         "clientid": "",
         "autoConnect": true,
@@ -54,58 +78,36 @@
         "sessionExpiry": ""
     },
     {
-        "id": "310f4e6206e4edb5",
-        "type": "influxdb in",
-        "z": "78be727fa7e059d9",
-        "influxdb": "2eea6dab767ce45c",
-        "name": "Database",
-        "query": "from(bucket: \"gs_sensors\")\n  |> range(start: 0)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"mqtt_consumer\")\n  |> limit(n: 7)\n  |> yield(name: \"last\")",
-        "rawOutput": false,
-        "precision": "",
-        "retentionPolicy": "",
-        "org": "se4iot",
-        "x": 500,
-        "y": 560,
-        "wires": [
-            [
-                "e2800a3c73513a9d"
-            ]
-        ]
-    },
-    {
-        "id": "3b8d787758925015",
-        "type": "inject",
-        "z": "78be727fa7e059d9",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "1",
-        "crontab": "",
-        "once": false,
-        "onceDelay": "1",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 110,
-        "y": 260,
-        "wires": [
-            [
-                "5a51656ac0e9b8c4"
-            ]
-        ]
+        "id": "1e5c597edc626429",
+        "type": "telegram bot",
+        "botname": "Green Score Meter",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "testenvironment": false,
+        "updatemode": "polling",
+        "pollinterval": 300,
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": 6667,
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbotport": 8443,
+        "publicbotport": 8443,
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
     },
     {
         "id": "efbcc5c90d227b86",
         "type": "file in",
         "z": "78be727fa7e059d9",
-        "name": "configurations",
+        "name": "Read configurations",
         "filename": "/data/setting/config.csv",
         "filenameType": "str",
         "format": "utf8",
@@ -113,8 +115,8 @@
         "sendError": false,
         "encoding": "none",
         "allProps": false,
-        "x": 360,
-        "y": 120,
+        "x": 480,
+        "y": 260,
         "wires": [
             [
                 "31c97c540927e253"
@@ -137,8 +139,8 @@
         "strings": true,
         "include_empty_strings": "",
         "include_null_values": "",
-        "x": 590,
-        "y": 120,
+        "x": 690,
+        "y": 260,
         "wires": [
             [
                 "9856030a9da6c187"
@@ -166,8 +168,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 110,
-        "y": 120,
+        "x": 210,
+        "y": 260,
         "wires": [
             [
                 "efbcc5c90d227b86"
@@ -175,61 +177,21 @@
         ]
     },
     {
-        "id": "e2800a3c73513a9d",
-        "type": "function",
-        "z": "78be727fa7e059d9",
-        "name": "green_score_calculation",
-        "func": "if(global.get('report_interval') == global.get('duration')){\n  var homes = global.get('homes')\n\n  for (let i = 0; i < homes.length; i++) {\n    var area = \"area_\" + homes[i].Area\n    var house = \"home_\" + homes[i].House\n    var phone = homes[i].Phone\n\n    var electricity_usage = 0\n    var water_usage = 0\n    var natural_gas_usage = 0\n    var air_polution_usage = 0\n    var crude_oil_usage = 0\n    var solar_production = 0\n    var hydrological_production = 0\n    var wind_production = 0\n    var biogas_production = 0\n\n\n    for (let j = 0; j < msg.payload.length; j++){\n      if (msg.payload[i].topic == 'air_pollution/'+area +'/' + house){\n        air_polution_usage = air_polution_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'electricity/'+area +'/' + house){\n        electricity_usage = electricity_usage + msg.payload[i]._value\n      }\n\n      if (msg.payload[i].topic == 'water/'+area +'/' + house){\n        water_usage = water_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'natural_gas/'+area +'/' + house){\n        natural_gas_usage = natural_gas_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'crude_oil/'+area +'/' + house){\n        crude_oil_usage = crude_oil_usage + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'solarProduction/'+area +'/' + house){\n        solar_production = solar_production + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'hydrologicalProduction/'+area +'/' + house){\n        hydrological_production = hydrological_production + msg.payload[i]._value\n      }\n      \n      if (msg.payload[i].topic == 'windProduction/' + area + '/' + house) {\n        wind_production = wind_production + msg.payload[i]._value\n      } \n      \n      if (msg.payload[i].topic == 'bioGasProduction/' + area + '/' + house) {\n        biogas_production = biogas_production + msg.payload[i]._value\n      }\n    }\n    \n  }\n\n  global.set('report_interval', 0) \n  // msg.payload = { air_polution_usage, electricity_usage, water_usage, natural_gas_usage, crude_oil_usage, solar_production, hydrological_production, wind_production, biogas_production }\n  msg.payload = msg.payload.length\n  return msg\n}\n\nmsg.payload = msg.payload.length\nreturn msg\n\n\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "// Code added here will be run once\n// whenever the node is started.\nfunction start(){\n    console\n}\n",
-        "finalize": "",
-        "libs": [],
-        "x": 710,
-        "y": 400,
-        "wires": [
-            [
-                "a64c98e68f19d89e"
-            ]
-        ]
-    },
-    {
         "id": "9856030a9da6c187",
         "type": "function",
         "z": "78be727fa7e059d9",
-        "name": "function 1",
-        "func": "if(msg.duration = \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.duration = \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.duration = \"yearly\"){\n    global.set(\"duration\", 365);\n}else{\n    global.set(\"duration\", 1);\n}\n\nglobal.set(\"configData\", msg)\n\nglobal.set(\"report_interval\", 0)\n",
+        "name": "set configurations",
+        "func": "\nif(msg.payload[2].value == \"weekly\"){\n    global.set(\"duration\", 7);\n}else if(msg.payload[2].value == \"monthly\"){\n    global.set(\"duration\", 30);\n}else if(msg.payload[2].value == \"yearly\"){\n    global.set(\"duration\", 365);\n}else if(msg.payload[2].value == \"daily\"){\n    global.set(\"duration\", 1);\n}\n\nglobal.set(\"configData\", msg.payload)\nglobal.set(\"waterThreshold\", msg.payload[4].value)\nglobal.set('electricityThreshold', msg.payload[3].value)\nglobal.set('naturalGasThreshold', msg.payload[5].value)\nglobal.set('airPollutionThreshold',msg.payload[6].value)\nglobal.set('crudeOilThreshold', msg.payload[7].value)\n\nglobal.set(\"report_interval\", 0)\n\nmsg.payload = global.get('configData')\nreturn msg",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 860,
-        "y": 120,
+        "x": 990,
+        "y": 260,
         "wires": [
             []
-        ]
-    },
-    {
-        "id": "5a51656ac0e9b8c4",
-        "type": "function",
-        "z": "78be727fa7e059d9",
-        "name": "function 2",
-        "func": "global.set('report_interval', global.get('report_interval') + 1)\n\nvar query = `\n  from(bucket: \"gs_sensors\")\n  |> range(start: -${global.get('duration')}s)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"mqtt_consumer\")\n  |> yield(name: \"last\")\n`;\n  \nmsg.query = query\n\nreturn msg\n\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 320,
-        "y": 420,
-        "wires": [
-            [
-                "310f4e6206e4edb5"
-            ]
         ]
     },
     {
@@ -253,8 +215,8 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 110,
-        "y": 180,
+        "x": 210,
+        "y": 320,
         "wires": [
             [
                 "fa2cda845a3e813c"
@@ -265,7 +227,7 @@
         "id": "fa2cda845a3e813c",
         "type": "file in",
         "z": "78be727fa7e059d9",
-        "name": "homes",
+        "name": "Read homes",
         "filename": "/data/homes/homes.csv",
         "filenameType": "str",
         "format": "utf8",
@@ -273,8 +235,8 @@
         "sendError": false,
         "encoding": "none",
         "allProps": false,
-        "x": 330,
-        "y": 180,
+        "x": 450,
+        "y": 320,
         "wires": [
             [
                 "03f86a3f1e1d4bea"
@@ -297,8 +259,8 @@
         "strings": true,
         "include_empty_strings": "",
         "include_null_values": "",
-        "x": 590,
-        "y": 180,
+        "x": 690,
+        "y": 320,
         "wires": [
             [
                 "07adb57d3dbafc0a"
@@ -309,7 +271,7 @@
         "id": "07adb57d3dbafc0a",
         "type": "function",
         "z": "78be727fa7e059d9",
-        "name": "function 3",
+        "name": "set homes",
         "func": "global.set('homes', msg.payload)",
         "outputs": 1,
         "timeout": 0,
@@ -317,26 +279,376 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 860,
-        "y": 180,
+        "x": 970,
+        "y": 320,
         "wires": [
             []
         ]
     },
     {
-        "id": "a64c98e68f19d89e",
-        "type": "debug",
-        "z": "78be727fa7e059d9",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 960,
-        "y": 540,
+        "id": "147c8e33ddfcaaba",
+        "type": "mqtt in",
+        "z": "ff131b979e6f962e",
+        "name": "MQTT",
+        "topic": "sensor/#",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "d39b7bc3b0a47ce4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 350,
+        "y": 300,
+        "wires": [
+            [
+                "beacb1429d82c38e"
+            ]
+        ]
+    },
+    {
+        "id": "39537717202ae6b8",
+        "type": "influxdb out",
+        "z": "ff131b979e6f962e",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Database Raw",
+        "measurement": "sensor",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "se4iot",
+        "bucket": "gs_sensors",
+        "x": 780,
+        "y": 300,
         "wires": []
+    },
+    {
+        "id": "beacb1429d82c38e",
+        "type": "function",
+        "z": "ff131b979e6f962e",
+        "name": "Format sensor data",
+        "func": "// Parse the topic\nlet topicParts = msg.topic.split('/');\nlet measurement = topicParts[0]; // \"sensor\"\nlet field = topicParts[1];       // \"wind\"\nlet area = topicParts[2];        // Extract \"area\"\nlet house = topicParts[3];       // Extract \"house\"\n\n// Prepare the payload for InfluxDB\nmsg.payload = [\n    {[field]: msg.payload[field]},\n    {\"area\": area, 'house':house}\n];\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 300,
+        "wires": [
+            [
+                "39537717202ae6b8"
+            ]
+        ]
+    },
+    {
+        "id": "310f4e6206e4edb5",
+        "type": "influxdb in",
+        "z": "8e6a519a871d2a1c",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Database",
+        "query": "",
+        "rawOutput": false,
+        "precision": "",
+        "retentionPolicy": "",
+        "org": "se4iot",
+        "x": 500,
+        "y": 200,
+        "wires": [
+            [
+                "e2800a3c73513a9d"
+            ]
+        ]
+    },
+    {
+        "id": "3b8d787758925015",
+        "type": "inject",
+        "z": "8e6a519a871d2a1c",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 220,
+        "wires": [
+            [
+                "5a51656ac0e9b8c4"
+            ]
+        ]
+    },
+    {
+        "id": "e2800a3c73513a9d",
+        "type": "function",
+        "z": "8e6a519a871d2a1c",
+        "name": "green_score_calculation",
+        "func": "// Retrieve the homes and measures from global context\nvar homes = global.get('homes');\n\n// set the metrics array\nvar measures = [\n    \"air_pollution\", \"bioGasProduction\", \"crude_oil\",\n    \"electricity\", \"hydrologicalProduction\", \"natural_gas\",\n    \"solarProduction\", \"water\", \"windProduction\"\n];\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\n// Initialize the consumption dictionary    \nvar consumption = {};\n\n// Initialize the greenscore dictionary\nvar greenScores = {};\n\nfor (let key in homes) {\n    \n    let houses = homes[key][\"House\"].split(\", \").map(h => h.trim());\n\n    // Iterate over each house\n    houses.forEach(house => {\n        // Create a dictionary with measures as keys and all values set to zero\n        consumption[\"home_\" + house] = {};\n        measures.forEach(measure => {\n            consumption[\"home_\" + house][measure] = 0;\n            // consumption[\"home_\" + house][\"houseName\"] = house\n        });\n    });\n\n}\n\n//populate the consumption dictionary with values consumed and produced.\nfor (let i = 0; i < msg.payload.length; i++) {\n    var sensorReading = msg.payload[i]\n    var house_name = sensorReading.house\n    consumption[house_name][sensorReading['_field']] += sensorReading['_value']\n}\n\n\n//compute the green score for each household\nfor (var house in consumption) {\n    var consumption_data = consumption[house]\n    var score = 0\n\n    // add consumption score\n    for (let limit in limits) {\n        if(consumption_data[limit] < limits[limit]){\n            score += 1\n        }\n    }\n\n    // add production score\n    if (\n        (consumption_data[\"solarProduction\"] > (0.7 * consumption_data[\"electricity\"])) ||\n        (consumption_data[\"windProduction\"] > (0.7 * consumption_data[\"electricity\"])) ||\n        (consumption_data[\"hydrologicalProduction\"] > (0.7 * consumption_data[\"electricity\"]))\n    ) {\n        score += 1;\n    }\n\n    if (consumption_data[\"windProduction\"] > (0.25 * consumption_data[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"solarProduction\"] > (0.25 * consumption_data[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"hydrologicalProduction\"] > (0.25 * consumption_data[\"electricity\"])) {\n        score += 1\n    }\n\n    if (consumption_data[\"bioGasProduction\"] > (0.25 * consumption_data[\"natural_gas\"])) {\n        score += 1\n    }\n\n    greenScores[house] = score\n}\n\n// Set the output payload to the consumption dictionary\nmsg.payload = [greenScores, consumption, limits]\n\nglobal.set(\"consumption_data\", consumption)\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Code added here will be run once\n// whenever the node is started.\nfunction start(){\n    console\n}\n",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 440,
+        "wires": [
+            [
+                "0deb30e37e802344"
+            ]
+        ]
+    },
+    {
+        "id": "5a51656ac0e9b8c4",
+        "type": "function",
+        "z": "8e6a519a871d2a1c",
+        "name": "Dynamic Database Query ",
+        "func": "global.set('report_interval', global.get('report_interval') + 1)\n\nvar query = `from(bucket: \"gs_sensors\")\n  |> range(start: -${global.get('report_interval')}s)\n  |> filter(fn: (r) => r._measurement == \"sensor\")\n`;\n\nmsg.query = query \n\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 460,
+        "wires": [
+            [
+                "310f4e6206e4edb5"
+            ]
+        ]
+    },
+    {
+        "id": "4c76d3a3435cb4ba",
+        "type": "influxdb out",
+        "z": "8e6a519a871d2a1c",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Database",
+        "measurement": "greenScores",
+        "precision": "",
+        "retentionPolicy": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "se4iot",
+        "bucket": "gs_sensors",
+        "x": 1060,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "0deb30e37e802344",
+        "type": "function",
+        "z": "8e6a519a871d2a1c",
+        "name": "format scores for DB",
+        "func": "var output = []\nvar scores = msg.payload[0]\nvar consumptions = msg.payload[1]\n\nif (global.get('report_interval') == global.get('duration')){\n    for (let score in scores) {\n            output.push([\n                {\n                    greenscore : scores[score],\n                    air_pollution: consumptions[score].air_pollution,\n                    bioGasProduction: consumptions[score].bioGasProduction, \n                    electricity: consumptions[score].electricity,\n                    hydrologicalProduction: consumptions[score].hydrologicalProduction,\n                    natural_gas: consumptions[score].natural_gas,\n                    solarProduction: consumptions[score].solarProduction,\n                    water: consumptions[score].water,\n                    windProduction: consumptions[score].windProduction,\n                    crude_oil: consumptions[score].crude_oil,\n                },\n                {\n                    'house': score\n                }\n            ])\n    }\n}else{\n    for (let score in scores) {\n            output.push([\n                {\n                    air_pollution: consumptions[score].air_pollution,\n                    bioGasProduction: consumptions[score].bioGasProduction, \n                    electricity: consumptions[score].electricity,\n                    hydrologicalProduction: consumptions[score].hydrologicalProduction,\n                    natural_gas: consumptions[score].natural_gas,\n                    solarProduction: consumptions[score].solarProduction,\n                    water: consumptions[score].water,\n                    windProduction: consumptions[score].windProduction,\n                    crude_oil: consumptions[score].crude_oil,\n                },\n                {\n                    'house': score\n                }\n            ])\n    }\n}\nmsg.payload = output\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 200,
+        "wires": [
+            [
+                "4c76d3a3435cb4ba"
+            ]
+        ]
+    },
+    {
+        "id": "d4799829fd1c0f56",
+        "type": "inject",
+        "z": "79331bef8f894ef6",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.5",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 360,
+        "wires": [
+            [
+                "5b377f7252f16ac9",
+                "252428fee4724403"
+            ]
+        ]
+    },
+    {
+        "id": "289154bf93487fa6",
+        "type": "function",
+        "z": "79331bef8f894ef6",
+        "name": "Compute report",
+        "func": "if (global.get('report_interval') == global.get('duration')) {\n    var homes = global.get('homes');\n    var interval_name = global.get('configData')[2].value;\n    var messages = [];\n\n    const greenscores = msg.payload.filter(item => item._field === \"greenscore\"); \n\n    // Loop through the houses in msg.payload\n    for (let house in greenscores) {\n        var houseName = greenscores[house]['house'].replace(\"home_\", \"\");\n\n        // Loop through the homes global variable\n        for (let id in homes) {\n            if (homes[id]['House'] == houseName) {\n                let phoneNo = homes[id].Phone;\n                let consumption = greenscores[house]['_value'];\n\n                // Construct the message\n                let writeup = `Dear ${houseName}, \n                                \\n Your ${interval_name} green score report\n                                is *${consumption} / 10* \\n \\n\n                                Stay Green`;\n\n                let message = {\n                    chatId: phoneNo,\n                    content: writeup,\n                    type: 'message'\n                };\n\n                // Push the message to the array\n                messages.push(message);\n            }\n        }\n    }\n\n    msg.payload = messages;\n\n    // refresh duration counter\n    global.set('report_interval', 0) \n     \n    return msg;\n}\n\n// msg.payload = {};\n// msg.payload.chatId = message.ChatID;\n// msg.payload.type = 'message';\n// msg.payload.content = message.body\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 100,
+        "wires": [
+            [
+                "451dcef9ba656c87"
+            ]
+        ]
+    },
+    {
+        "id": "717a549bdc053036",
+        "type": "influxdb in",
+        "z": "79331bef8f894ef6",
+        "influxdb": "2eea6dab767ce45c",
+        "name": "Green Score DB",
+        "query": "",
+        "rawOutput": false,
+        "precision": "",
+        "retentionPolicy": "",
+        "org": "se4iot",
+        "x": 440,
+        "y": 100,
+        "wires": [
+            [
+                "289154bf93487fa6"
+            ]
+        ]
+    },
+    {
+        "id": "252428fee4724403",
+        "type": "function",
+        "z": "79331bef8f894ef6",
+        "name": "Dynamic Query",
+        "func": "var query = `from(bucket: \"gs_sensors\")\n  |> range(start: -1s)\n  |> filter(fn: (r) => r._measurement == \"greenScores\")\n`;\n\nmsg.query = query \n\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 240,
+        "y": 100,
+        "wires": [
+            [
+                "717a549bdc053036"
+            ]
+        ]
+    },
+    {
+        "id": "5b377f7252f16ac9",
+        "type": "function",
+        "z": "79331bef8f894ef6",
+        "name": "Get Consumption Data",
+        "func": "if (global.get('report_interval') < global.get('duration')) {\n    msg.payload = global.get('consumption_data')\n\n    return msg\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 600,
+        "wires": [
+            [
+                "873256f6fdc78fb1"
+            ]
+        ]
+    },
+    {
+        "id": "451dcef9ba656c87",
+        "type": "split",
+        "z": "79331bef8f894ef6",
+        "name": "Trigger Notification",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "topic",
+        "property": "payload",
+        "x": 710,
+        "y": 280,
+        "wires": [
+            [
+                "6b0ce6fabb71a63d"
+            ]
+        ]
+    },
+    {
+        "id": "e3d298b889176b9b",
+        "type": "split",
+        "z": "79331bef8f894ef6",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload",
+        "x": 670,
+        "y": 380,
+        "wires": [
+            [
+                "873256f6fdc78fb1"
+            ]
+        ]
+    },
+    {
+        "id": "873256f6fdc78fb1",
+        "type": "function",
+        "z": "79331bef8f894ef6",
+        "name": "Configure Message",
+        "func": "var homes = global.get('homes');\nvar interval_name = global.get('configData')[2].value;\n\nvar limits = {\n    \"water\": global.get(\"waterThreshold\"),\n    \"electricity\":global.get(\"electricityThreshold\"),\n    \"natural_gas\":global.get(\"naturalGasThreshold\"),\n    \"air_pollution\": global.get(\"airPollutionThreshold\"),\n    \"crude_oil\": global.get(\"crudeOilThreshold\")\n}\n\nvar consumption = msg.payload\n\nvar excesses = []\n\nfor (let limit in limits) {\n    if(consumption[limit] >= 0.80 * limits[limit]){\n        excesses.push(limit)\n        }\n}\n\n    // If limits exceeded\n\nif(excesses.length > 0){\n\n    for (let key in homes) {\n        if(\"home_\" + homes[key][\"House\"] == msg.parts.key){\n            var phone = msg.payload= homes[key].Phone\n            var house = homes[key][\"House\"]\n        } \n    }\n\n    var message = `Dear ${house}, \\n\\n This is a notification that you have exceeded 80% of your ${interval_name} utilization for ${excesses.join(\",\")}. \\n \\n You might want to consider reducing the consumption to meet our green goal`;\n\n    msg.payload = {\n                chatId: phone,\n                content: message,\n                type: 'message'\n        };\n\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6b0ce6fabb71a63d",
+        "type": "telegram sender",
+        "z": "79331bef8f894ef6",
+        "name": "",
+        "bot": "1e5c597edc626429",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 970,
+        "y": 360,
+        "wires": [
+            []
+        ]
     }
 ]

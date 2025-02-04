@@ -16,7 +16,6 @@ The **Green Score Meter** is an IoT-based system designed to promote sustainabil
 - **MQTT Broker** - Message communication
 - **InfluxDB** - Time-series database for sensor data storage
 - **Grafana** - Data visualization
-- **Telegraf** - Data collection agent
 - **Docker** - Containerized deployment
 - **Python** - Sensor simulation
 

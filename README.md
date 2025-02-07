@@ -51,5 +51,11 @@ The **Green Score Meter** is an IoT-based system designed to promote sustainabil
 3. **Analyze Green Score**
    - Green Scores are updated in the dashboard based on resource usage.
 
+## Green Score Dashboard
+
+The dashboard for the IoT system looks a little something lke this 👀
+
+![Grafana Dashboard](img/greenscore_dashboard.png)
+
 ---
 **Developed as part of the SE4GD Master's Degree Programme**
